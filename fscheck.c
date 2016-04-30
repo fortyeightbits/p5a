@@ -7,11 +7,19 @@
 #include <sys/mman.h>
 #include "fs.h"
 
+// TODO: populate with different errors
+typedef enum errno{
+    error1,
+    error2,
+    error3,
+    error4
+}e_errno;
+
 int main (int argc, char *argv[]){
-	
+    e_errno errorflag;
+
 	int fd = open(argv[1], O_RDONLY);
 	assert (fd > -1);
-	
 	int rc;
 	struct stat sbuf;
 	int rc = fstat (fd, &sbuf);
@@ -19,8 +27,7 @@ int main (int argc, char *argv[]){
 
 	void* img_ptr = mmap(NULL, sbuf.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
 	assert(img_ptr != MAP_FAILED);
-
-	struct suerblock *sb;
+    struct superblock *sb;
 	sb = (struct superblock *) (img_ptr + BSIZE);
 	
 	
@@ -34,4 +41,10 @@ int main (int argc, char *argv[]){
 	*/
 	
 	return 0;
+
+    bad:
+    // TODO: Handle errors.
+    printf("found an error! Error number: %d\n", errorflag);
+
+    return 1;
 }
