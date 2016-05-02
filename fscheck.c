@@ -102,29 +102,40 @@ int main (int argc, char *argv[]){
 			}
 
 			int parentinode = (directoryptr+1)->inum;
-			iblockstart += parentinode;
-			int k;
+            struct dinode *parseptr = iblockstart;
+            parseptr += parentinode;
+            int k = 0;
 			int found = 0;
-			while (iblockstart->addrs[k] != 0){
-				getblock(iblockstart->addrs[k], (void*)blockbuf.charbuf, img_ptr);
-				directoryptr = (struct dirent*)blockbuf.charbuf;
-				int m;
-				while (directoryptr->inum != 0){
-					if (directoryptr->inum == i){
-						found = 1;
-						break;
-					}
-					directoryptr++;
-				}
-				k++;
+            while (parseptr->addrs[k] != 0){
+                getblock(parseptr->addrs[k], (void*)blockbuf.charbuf, img_ptr);
+                directoryptr = (struct dirent*)blockbuf.charbuf;
+                while (directoryptr->inum != 0){
+                    printf("name: %s, directoryptr->inum: %d, i: %d\n", directoryptr->name, directoryptr->inum, i);
+                    if (directoryptr->inum == i){
+                        found = 1;
+                        break;
+                    }
+                    directoryptr++;
+                }
+                k++;
+                if ((k == NDIRECT) && (iblockstart->addrs[k]) != 0)
+                {
+                    getblock(iblockstart->addrs[k], (void*)blockbuf.charbuf, img_ptr);
+                    directoryptr = (struct dirent*)blockbuf.charbuf;
+                    while(directoryptr->inum!=0){
+                        if(directoryptr->inum == i){
+                            found = 1;
+                            break;
+                        }
+                    }
+                }
+                //TODO: check indirect
 				
-				//TODO: check indirect
-				
-			}
-			if (!found){
-				errorflag = parentdirmismatch;
-				goto bad;
-			}
+            }
+            if (!found){
+                errorflag = parentdirmismatch;
+                goto bad;
+        }
 			
 		}
 		
@@ -155,7 +166,7 @@ int main (int argc, char *argv[]){
                 errorflag = badinodeadd;
                 goto bad;
             }
-            printf("blockbuf content [%d]: %d\n", indirect, blockbuf.intbuf[indirect]);
+            //printf("blockbuf content [%d]: %d\n", indirect, blockbuf.intbuf[indirect]);
         }
 		dip++; //will increment by size of dip
 	}

@@ -16,12 +16,14 @@ USER_PROGS := \
 	tester\
 	usertests\
 	wc\
-	zombie
+	zombie\
+	clone
 
 USER_PROGS := $(addprefix user/, $(USER_PROGS))
 
 # user library files
 USER_LIBS := \
+	threadlib.o\
 	ulib.o\
 	usys.o\
 	printf.o\

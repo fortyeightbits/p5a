@@ -107,7 +107,7 @@ int
 growproc(int n)
 {
   uint sz;
-  
+  struct proc* p;
   sz = proc->sz;
   if(n > 0){
     if((sz = allocuvm(proc->pgdir, sz, sz + n)) == 0)
@@ -117,6 +117,17 @@ growproc(int n)
       return -1;
   }
   proc->sz = sz;
+  acquire(&ptable.lock);
+
+   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->isThread == 0)
+          continue;
+      if(p->parent != proc)
+          continue;
+      p->sz = sz;
+   }
+  release(&ptable.lock);
+
   switchuvm(proc);
   return 0;
 }
@@ -158,6 +169,118 @@ fork(void)
   safestrcpy(np->name, proc->name, sizeof(proc->name));
   return pid;
 }
+
+int 
+clone(void(*fcn)(void*), void *arg, void*stack) 
+{
+  int pid;
+  int i;
+  struct proc *np;
+  uint ustack[2]; // This contains the newly generated 'stack' for our function.
+
+  if((uint)stack % 4096 != 0){
+	  cprintf("not page aligned: %d\n", (uint)stack);
+	  return -1; //not page aligned
+  }
+  
+  uint sp = (uint)stack + 4096; //just off the top of my head, will need to verify.
+  
+  //check if it exceeds size of address space. sp or stack?
+  if (sp > proc->sz){
+	  cprintf("sp > sz\n");
+	  return -1;
+  }
+  
+  uint bp = sp; //set base pointer = stack pointer  
+
+  if((np = allocproc()) == 0){
+    return -1;
+  }
+  
+    np->userStack = stack;
+  
+//  int threadcounter;
+//  for(threadcounter = 0; (proc->threads[threadcounter]) != NULL; threadcounter++)
+//	  ;
+      //cprintf("threadcounter: %d\n", threadcounter);
+      //cprintf("proc->threads[threadcounter]: %d\n", proc->threads[threadcounter]);
+//  proc->threads[proc->currentThreadPos] = np;
+//  proc->currentThreadPos++;
+  np->pgdir = proc->pgdir;
+  np->sz = proc->sz;
+  np->isThread = 1; // yes I'm a thread
+  np->parent = proc;
+  *np->tf = *proc->tf;
+  np->tf->eax = 0;
+  
+  // Pushing stuff onto ustack. This is NOT complete yet.
+  ustack[0] = 0xffffffff;  // fake return PC. I think this is here so that if there is no exit() done by user, it traps.
+  ustack[1] = (uint)(arg);
+
+  sp -= 8;
+  copyout(np->pgdir, sp, ustack, 8);
+  //file descriptor jargon
+  for(i = 0; i < NOFILE; i++)
+    if(proc->ofile[i])
+      np->ofile[i] = filedup(proc->ofile[i]);
+  np->cwd = idup(proc->cwd);
+  
+  pid = np->pid;
+  // trapframe stuff.
+  np->tf->eip = (uint)(fcn);  // start running function
+  np->tf->ebp = bp;
+  np->tf->esp = sp;
+  np->state = RUNNABLE;
+  safestrcpy(np->name, proc->name, sizeof(proc->name)); 
+  return pid;
+}
+
+// location of the child's user stack is copied into the argument stack 
+int join(void **stack)
+{
+	
+	struct proc *p;
+	int pid;
+
+    if ((uint)stack%4)
+      return -1;
+
+    acquire(&ptable.lock);
+    for(;;)
+    {
+		int flag = 0;
+        for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+            if(p->isThread == 0)
+                continue;
+            if(p->parent != proc)
+                continue;
+			flag = 1;
+            if(p->state == ZOMBIE){
+              // Found one.
+			  *stack = p->userStack; //copied child's stack
+              pid = p->pid;             
+              kfree(p->kstack);
+              p->kstack = 0;
+              p->state = UNUSED;
+              p->pid = 0;
+              p->parent = 0;
+              p->name[0] = 0;
+              p->killed = 0;
+              release(&ptable.lock);
+              return pid;
+            }
+			
+        }
+		if (!flag){
+			release(&ptable.lock);
+			return -1;
+		}
+    sleep(proc, &ptable.lock);  //DOC: wait-sleep
+	//release(&ptable.lock);
+	//return -1;
+    }
+}
+
 
 // Exit the current process.  Does not return.
 // An exited process remains in the zombie state
@@ -215,7 +338,7 @@ wait(void)
     // Scan through table looking for zombie children.
     havekids = 0;
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->parent != proc)
+      if(p->parent != proc || p->isThread == 1)
         continue;
       havekids = 1;
       if(p->state == ZOMBIE){

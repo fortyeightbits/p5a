@@ -7,6 +7,33 @@
 #include "sysfunc.h"
 
 int
+sys_clone(void)
+{
+	char* p1;
+	char* p2;
+	//void(*fcn)(void*);
+	char* p0;
+	
+    if(argptr(0, &p0, 4 < 0 || argptr(2, &p2, 4)  < 0 || argptr(1, &p1, 1) < 0)) 
+		return -1;
+	
+	/*p1 = (void*)p1;
+	p2 = (void*)p2;
+	p0 = (void (*)(void *))p0;*/
+	return clone((void (*)(void *))p0, (void*)p1, (void*)p2);
+}
+
+int
+sys_join(void)
+{
+	char* p1;
+    if (argptr(0, &p1, 1) < 0) 
+		return -1;
+	
+    return join((void**)p1);
+}
+
+int
 sys_fork(void)
 {
   return fork();

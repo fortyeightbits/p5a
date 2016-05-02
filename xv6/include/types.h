@@ -7,6 +7,13 @@ typedef unsigned int   uint;
 typedef unsigned short ushort;
 typedef unsigned char  uchar;
 typedef uint pde_t;
+
+typedef struct thread_t
+{
+    volatile uint thread_pid;
+
+}thread_t;
+
 #ifndef NULL
 #define NULL (0)
 #endif

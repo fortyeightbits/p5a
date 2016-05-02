@@ -1,7 +1,17 @@
 #ifndef _USER_H_
 #define _USER_H_
 
+#define PGSIZE  (4096)
+
 struct stat;
+// Mutual exclusion lock.
+typedef struct lock {
+  uint locked;       // Is the lock held?
+  // For debugging:
+  //struct cpu *cpu;   // The cpu holding the lock.
+  //uint pcs[10];      // The call stack (an array of program counters)
+                     // that locked the lock.
+}lock_t;
 
 // system calls
 int fork(void);
@@ -25,6 +35,8 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
+int clone(void(*)(void*), void*, void*);
+int join(void**);
 
 // user library functions (ulib.c)
 int stat(char*, struct stat*);
@@ -39,6 +51,14 @@ void* memset(void*, int, uint);
 void* malloc(uint);
 void free(void*);
 int atoi(const char*);
+
+// thread library functions
+int thread_create(void (*start_routine)(void*), void *);
+int thread_join(void);
+void lock_init(lock_t *);
+void lock_acquire(lock_t*);
+void lock_release(lock_t *);
+int holding(lock_t *);
 
 #endif // _USER_H_
 
