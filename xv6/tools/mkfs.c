@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <dirent.h>
 #include <stdbool.h>
+#include "../Documents/p5a/xv6/include/fs.h"
 
 #define stat xv6_stat  // avoid clash with host struct stat
 #define dirent xv6_dirent  // avoid clash with host struct stat
@@ -280,6 +281,7 @@ rinode(uint inum, struct dinode *ip)
   *ip = *dip;
 }
 
+// argument 1 = address of sector, use xint on address shown in inode. argument 2 = pointer to buffer which stores read data
 void
 rsect(uint sec, void *buf)
 {

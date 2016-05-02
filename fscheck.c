@@ -5,9 +5,12 @@
 #include <unistd.h>
 #include <assert.h>
 #include <sys/mman.h>
+#include <string.h>
 #include "fs.h"
+#include "types.h"
 
 #define STDERR_FD 2
+#define INTS_PER_BLOCK 128
 
 // TODO: populate with different errors
 typedef enum errno{
@@ -26,15 +29,41 @@ typedef enum errno{
 	dirused
 }e_errno;
 
+typedef union buffer{
+    char charbuf[512];
+    int intbuf[128];
+}buff_u;
+
+uint
+xint(uint x)
+{
+  uint y;
+  uchar *a = (uchar*)&y;
+  a[0] = x;
+  a[1] = x >> 8;
+  a[2] = x >> 16;
+  a[3] = x >> 24;
+  return y;
+}
+
+void
+getblock(uint sec, void *buf, void* imagepointer)
+{
+    uint bitoffset = 512*sec; //TODO
+    imagepointer += bitoffset;
+    memcpy(buf, imagepointer, 512);
+}
+
 int main (int argc, char *argv[]){
     e_errno errorflag;
-
+    char* error_message;
+    buff_u blockbuf;
+    struct dirent* directoryptr;
 	int fd = open(argv[1], O_RDONLY);
 	if (fd < 0){
 		errorflag = noimg;
 		goto bad;
 	}
-	int rc;
 	struct stat sbuf;
 	int rc = fstat (fd, &sbuf);
 	assert (rc == 0);
@@ -44,35 +73,57 @@ int main (int argc, char *argv[]){
     struct superblock *sb;
 	sb = (struct superblock *) (img_ptr + BSIZE);
 	
-	
+    // Parse through the inodes
 	int i ;
 	struct dinode *dip = (struct dinode*) (img_ptr + 2*BSIZE);
-	for (i = 0; i < sb->ninodes; i++){
-		if (dip->type < 0 || dip->type > 3){
+    for (i = 0; i < sb->ninodes; i++)
+    {
+        if (dip->type < 0 || dip->type > 3)
+        {
 			errorflag = badinode;
 			goto bad;
 		}
 		
-		//direct pointers
+        // Parse through direct pointers
 		int j;
-		for (j = 0; j < NDIRECT; j++){
-			if (dip->addrs[j] > (sb->size * BPB){
+        for (j = 0; j < NDIRECT; j++)
+        {
+            printf("addrs: %d\n", xint(dip->addrs[j]));
+
+            // Check for bad i node data block address
+            if ((xint(dip->addrs[j]) >= xint(sb->size))||((xint(dip->addrs[j]) <= BBLOCK(sb->size,sb->ninodes)) && (xint(dip->addrs[j]) != 0))){
 				errorflag = badinodeadd;
 				goto bad;
 			}
+
+            if(i == ROOTINO) // BIG TODO
+            {
+                getblock(dip->addrs[0], (void*)blockbuf.charbuf, img_ptr);
+                directoryptr = (struct dirent*)blockbuf.charbuf;
+                printf("this is our directory: %s\n", directoryptr->name);
+            }
 		}
-		
+
+        printf("type: %d\n", xint(dip->type));
+
 		//indirect pointers
-		
-		
+        getblock(dip->addrs[NDIRECT], (void*)blockbuf.charbuf, img_ptr);
+        int indirect;
+        for(indirect = 0; indirect < INTS_PER_BLOCK; indirect++)
+        {
+            if ((xint(blockbuf.intbuf[indirect]) >= xint(sb->size))||((xint(blockbuf.intbuf[indirect]) <= BBLOCK(sb->size,sb->ninodes)) && (xint(blockbuf.intbuf[indirect]) != 0)))
+            {
+                errorflag = badinodeadd;
+                goto bad;
+            }
+            printf("blockbuf content [%d]: %d\n", indirect, blockbuf.intbuf[indirect]);
+        }
 		dip++; //will increment by size of dip
 	}
 	
 	return 0;
 
     bad:
-	char* error_message;
-	
     switch(errorflag){
 		case noimg :
 			error_message = "image not found"; break;
