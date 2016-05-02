@@ -76,6 +76,7 @@ int main (int argc, char *argv[]){
     // Parse through the inodes
 	int i ;
 	struct dinode *dip = (struct dinode*) (img_ptr + 2*BSIZE);
+	struct dinode *iblockstart = dip;
     for (i = 0; i < sb->ninodes; i++)
     {
         if (dip->type < 0 || dip->type > 3)
@@ -83,6 +84,50 @@ int main (int argc, char *argv[]){
 			errorflag = badinode;
 			goto bad;
 		}
+					
+		//it's a directory entry!
+		if (dip->type == 1){
+			getblock(dip->addrs[0], (void*)blockbuf.charbuf, img_ptr);
+			directoryptr = (struct dirent*)blockbuf.charbuf;
+			if (!(strcmp(directoryptr->name, ".") == 0  && (strcmp((directoryptr+1)->name, "..") == 0))){
+				errorflag = baddirformat;
+				goto bad;
+			}
+			
+			if(i == ROOTINO){
+				if (!(directoryptr->inum == ROOTINO && (directoryptr+1)->inum == ROOTINO)){
+						errorflag = norootdir;
+						goto bad;
+				}			
+			}
+
+			int parentinode = (directoryptr+1)->inum;
+			iblockstart += parentinode;
+			int k;
+			int found = 0;
+			while (iblockstart->addrs[k] != 0){
+				getblock(iblockstart->addrs[k], (void*)blockbuf.charbuf, img_ptr);
+				directoryptr = (struct dirent*)blockbuf.charbuf;
+				int m;
+				while (directoryptr->inum != 0){
+					if (directoryptr->inum == i){
+						found = 1;
+						break;
+					}
+					directoryptr++;
+				}
+				k++;
+				
+				//TODO: check indirect
+				
+			}
+			if (!found){
+				errorflag = parentdirmismatch;
+				goto bad;
+			}
+			
+		}
+		
 		
         // Parse through direct pointers
 		int j;
@@ -95,13 +140,7 @@ int main (int argc, char *argv[]){
 				errorflag = badinodeadd;
 				goto bad;
 			}
-
-            if(i == ROOTINO) // BIG TODO
-            {
-                getblock(dip->addrs[0], (void*)blockbuf.charbuf, img_ptr);
-                directoryptr = (struct dirent*)blockbuf.charbuf;
-                printf("this is our directory: %s\n", directoryptr->name);
-            }
+		
 		}
 
         printf("type: %d\n", xint(dip->type));
