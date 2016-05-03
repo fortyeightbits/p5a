@@ -58,6 +58,7 @@ int main (int argc, char *argv[]){
     e_errno errorflag;
     char* error_message;
     buff_u blockbuf;
+    buff_u bitmapbuf;
     struct dirent* directoryptr;
 	int fd = open(argv[1], O_RDONLY);
 	if (fd < 0){
@@ -110,7 +111,7 @@ int main (int argc, char *argv[]){
                 getblock(parseptr->addrs[k], (void*)blockbuf.charbuf, img_ptr);
                 directoryptr = (struct dirent*)blockbuf.charbuf;
                 while (directoryptr->inum != 0){
-                    printf("name: %s, directoryptr->inum: %d, i: %d\n", directoryptr->name, directoryptr->inum, i);
+                    //printf("name: %s, directoryptr->inum: %d, i: %d\n", directoryptr->name, directoryptr->inum, i);
                     if (directoryptr->inum == i){
                         found = 1;
                         break;
@@ -118,6 +119,7 @@ int main (int argc, char *argv[]){
                     directoryptr++;
                 }
                 k++;
+                // If we can't find a match in the direct blocks and there is an indirect pointer, search in those blocks
                 if ((k == NDIRECT) && (iblockstart->addrs[k]) != 0)
                 {
                     getblock(iblockstart->addrs[k], (void*)blockbuf.charbuf, img_ptr);
@@ -135,7 +137,7 @@ int main (int argc, char *argv[]){
             if (!found){
                 errorflag = parentdirmismatch;
                 goto bad;
-        }
+            }
 			
 		}
 		
@@ -151,7 +153,22 @@ int main (int argc, char *argv[]){
 				errorflag = badinodeadd;
 				goto bad;
 			}
-		
+
+            // Check if these pointers are marked as used in the bitmap block.
+            if (dip->addrs[j] != 0)
+            {
+                char bitmapcheckbuf;
+                getblock(BBLOCK(dip->addrs[j], sb->ninodes), (void*)bitmapbuf.charbuf, img_ptr);
+                bitmapcheckbuf = bitmapbuf.charbuf[(dip->addrs[j])/8];
+                bitmapcheckbuf >>= (dip->addrs[j]-((dip->addrs[j])%8));
+
+                if(!(bitmapcheckbuf & 0b00000001))
+                {
+                    errorflag = addmarkedfree;
+                    goto bad;
+                }
+            }
+
 		}
 
         printf("type: %d\n", xint(dip->type));
