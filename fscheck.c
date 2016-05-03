@@ -73,6 +73,7 @@ int main (int argc, char *argv[]){
 	assert(img_ptr != MAP_FAILED);
     struct superblock *sb;
 	sb = (struct superblock *) (img_ptr + BSIZE);
+	int blockcount = 29;
 	
     // Parse through the inodes
 	int i ;
@@ -142,6 +143,7 @@ int main (int argc, char *argv[]){
 		}
 		
 		
+		
         // Parse through direct pointers
 		int j;
         for (j = 0; j < NDIRECT; j++)
@@ -157,6 +159,7 @@ int main (int argc, char *argv[]){
             // Check if these pointers are marked as used in the bitmap block.
             if (dip->addrs[j] != 0)
             {
+				++blockcount;
                 char bitmapcheckbuf;
                 //printf("BBLOCK: %d\n", BBLOCK(dip->addrs[j], sb->ninodes));
                 getblock(BBLOCK(dip->addrs[j], sb->ninodes), (void*)bitmapbuf.charbuf, img_ptr);
@@ -170,6 +173,10 @@ int main (int argc, char *argv[]){
                 }
             }
 
+		}
+		if (dip->addrs[NDIRECT] != 0)
+		{
+			++blockcount;
 		}
 
         printf("type: %d\n", xint(dip->type));
@@ -185,8 +192,65 @@ int main (int argc, char *argv[]){
                 goto bad;
             }
             //printf("blockbuf content [%d]: %d\n", indirect, blockbuf.intbuf[indirect]);
+			
+			  if (blockbuf.intbuf[indirect] != 0)
+            {
+				++blockcount;
+                char bitmapcheckbuf;
+                getblock(BBLOCK(blockbuf.intbuf[indirect], sb->ninodes), (void*)bitmapbuf.charbuf, img_ptr);
+                bitmapcheckbuf = bitmapbuf.charbuf[blockbuf.intbuf[indirect]/8];
+                bitmapcheckbuf >>= (blockbuf.intbuf[indirect]%8);
+
+                if(!(bitmapcheckbuf & 0b00000001))
+                {
+                    errorflag = addmarkedfree;
+                    goto bad;
+                }
+            }
+			
         }
 		dip++; //will increment by size of dip
+	}
+	
+	//check bitmap
+	//struct dinode *inodeptr = (struct dinode*) (img_ptr + 2*BSIZE);
+	//++inodeptr;
+	//struct dinode *inodeparser = inodeptr;
+	uint totalbits = 0;
+	getblock(BBLOCK(dip->addrs[0], sb->ninodes), (void*)bitmapbuf.charbuf, img_ptr);
+	int m;
+	int eighttimes;
+	int bitcnt = 0;
+	for (m = 0; m < BSIZE; m++)
+	{
+		//if (bitmapbuf.charbuf[m] != 0)
+		//{
+			char characterbuffer = bitmapbuf.charbuf[m];
+			for (eighttimes = 0; eighttimes < 8; eighttimes++)
+			{
+				if (characterbuffer & 0b00000001)
+				{
+					++totalbits;
+				}
+				characterbuffer >>= 1;
+					/*
+					
+					inodeparser = inodeptr;
+					inodeparser += bitcnt;
+					if (inodeparser->type == 0)
+					{
+						errorflag = blknotused;
+						goto bad;
+					}
+				}
+			++bitcnt;*/
+			}
+		//}
+	}
+	printf("totalbits: %d, blockcount: %d\n", totalbits, blockcount);
+	if (totalbits != blockcount){
+		errorflag = blknotused;
+		goto bad;
 	}
 	
 	return 0;
@@ -194,25 +258,25 @@ int main (int argc, char *argv[]){
     bad:
     switch(errorflag){
 		case noimg :
-			error_message = "image not found"; break;
+			error_message = "image not found\n"; break;
 		case badinode : 
-			error_message = "bad inode"; break;
+			error_message = "bad inode\n"; break;
 		case badinodeadd : 
-			error_message = "bad address in inode"; break;
+			error_message = "bad address in inode\n"; break;
 		case norootdir : 
-			error_message = "root directory does not exist"; break;
+			error_message = "root directory does not exist\n"; break;
 		case baddirformat : 
-			error_message = "directory not properly formatted"; break;
+			error_message = "directory not properly formatted\n"; break;
 		case parentdirmismatch : 
-			error_message = "parent directory mismatch"; break;
+			error_message = "parent directory mismatch\n"; break;
 		case addmarkedfree : 
-			error_message = "address used by inode but marked free in bitmap"; break;
+			error_message = "address used by inode but marked free in bitmap\n"; break;
 		case blknotused : 
-			error_message = "bitmap marks block in use but it is not in use"; break;
+			error_message = "bitmap marks block in use but it is not in use\n"; break;
 		case addused : 
-			error_message = "address used more than once"; break;
+			error_message = "address used more than once\n"; break;
 		case inodenotindir : 
-			error_message = "inode marked use but not found in a directory"; break;
+			error_message = "inode marked use but not found in a directory\n"; break;
 		case inodefree : 
 			error_message = "inode referred to in directory but marked free"; break;
 		case badrefcnt : 
