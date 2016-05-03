@@ -158,9 +158,10 @@ int main (int argc, char *argv[]){
             if (dip->addrs[j] != 0)
             {
                 char bitmapcheckbuf;
+                //printf("BBLOCK: %d\n", BBLOCK(dip->addrs[j], sb->ninodes));
                 getblock(BBLOCK(dip->addrs[j], sb->ninodes), (void*)bitmapbuf.charbuf, img_ptr);
                 bitmapcheckbuf = bitmapbuf.charbuf[(dip->addrs[j])/8];
-                bitmapcheckbuf >>= (dip->addrs[j]-((dip->addrs[j])%8));
+                bitmapcheckbuf >>= ((dip->addrs[j])%8);
 
                 if(!(bitmapcheckbuf & 0b00000001))
                 {
