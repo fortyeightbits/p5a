@@ -59,6 +59,7 @@ int main (int argc, char *argv[]){
     char* error_message;
     buff_u blockbuf;
     buff_u bitmapbuf;
+	buff_u dircheckbuf;
     struct dirent* directoryptr;
 	int fd = open(argv[1], O_RDONLY);
 	if (fd < 0){
@@ -105,6 +106,59 @@ int main (int argc, char *argv[]){
 				}			
 			}
 
+			int dirBlocks = 0;
+			int foundInodeinDir = 0;
+			struct dirent* parseThroughCurrentDir;
+			while (dip->addrs[dirBlocks] != 0){
+				getblock(dip->addrs[dirBlocks], (void*)dircheckbuf.charbuf, img_ptr);
+				parseThroughCurrentDir = (struct dirent*)dircheckbuf.charbuf;
+				int direntptr = 0;
+				while (direntptr <= (512/sizeof(struct dirent)))
+				{
+					if (parseThroughCurrentDir->inum == i)
+					{
+						foundInodeinDir = 1;
+						break;
+					}
+					direntptr++;
+					parseThroughCurrentDir++;
+				}
+				if (foundInodeinDir)
+					break;
+				
+				dirBlocks++;
+			}
+			
+			dirBlocks++; //get to indirect pointers block
+                if ((dirBlocks == NDIRECT) && (dip->addrs[dirBlocks]) != 0)
+                {
+                    getblock(dip->addrs[dirBlocks], (void*)dircheckbuf.charbuf, img_ptr); //block containing pointer to 128 pointers
+					int indirectptr = 0;
+					while (dircheckbuf.intbuf[indirectptr] != 0){
+						
+						parseThroughCurrentDir = (struct dirent*)(&dircheckbuf.charbuf[indirectptr]);
+						int indirectDirentPtr = 0;
+						while(indirectDirentPtr <= (512/sizeof(struct dirent))){
+							if(parseThroughCurrentDir->inum == i){
+								foundInodeinDir = 1;
+								break;
+							}
+							indirectDirentPtr++;
+							parseThroughCurrentDir++;
+						}
+						indirectptr++;
+						if (foundInodeinDir)
+							break;
+					}
+                }
+			
+			if (!foundInodeinDir)
+			{
+				errorflag = inodenotindir;
+				goto bad;
+			}
+			
+			//check parent dir mismatch
 			int parentinode = (directoryptr+1)->inum;
             struct dinode *parseptr = iblockstart;
             parseptr += parentinode;
@@ -134,7 +188,6 @@ int main (int argc, char *argv[]){
                         }
                     }
                 }
-                //TODO: check indirect
 				
             }
             if (!found){
@@ -150,7 +203,7 @@ int main (int argc, char *argv[]){
 		int j;
         for (j = 0; j < NDIRECT; j++)
         {
-            printf("addrs: %d\n", xint(dip->addrs[j]));
+           printf("addrs: %d\n", xint(dip->addrs[j]));
 
 
             //For the first direct address of first direct pointer, initialize the inodeHistory
@@ -199,7 +252,7 @@ int main (int argc, char *argv[]){
 			++blockcount;
 		}
 
-        printf("type: %d\n", xint(dip->type));
+       // printf("type: %d\n", xint(dip->type));
 
 		//indirect pointers
         getblock(dip->addrs[NDIRECT], (void*)blockbuf.charbuf, img_ptr);
