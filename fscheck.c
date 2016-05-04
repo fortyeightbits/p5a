@@ -75,6 +75,8 @@ int main (int argc, char *argv[]){
 	sb = (struct superblock *) (img_ptr + BSIZE);
 	int blockcount = 29;
 	
+
+    uint inodeHistory = 0;
     // Parse through the inodes
 	int i ;
 	struct dinode *dip = (struct dinode*) (img_ptr + 2*BSIZE);
@@ -150,6 +152,13 @@ int main (int argc, char *argv[]){
         {
             printf("addrs: %d\n", xint(dip->addrs[j]));
 
+
+            //For the first direct address of first direct pointer, initialize the inodeHistory
+            if((i == 0)&&(j == 0))
+            {
+                inodeHistory = dip->addrs[j];
+            }
+
             // Check for bad i node data block address
             if ((xint(dip->addrs[j]) >= xint(sb->size))||((xint(dip->addrs[j]) <= BBLOCK(sb->size,sb->ninodes)) && (xint(dip->addrs[j]) != 0))){
 				errorflag = badinodeadd;
@@ -159,6 +168,17 @@ int main (int argc, char *argv[]){
             // Check if these pointers are marked as used in the bitmap block.
             if (dip->addrs[j] != 0)
             {
+                // Check if inode address has been used before
+                if((dip->addrs[j] <= inodeHistory))
+                {
+                    // throw error
+                    errorflag = addused;
+                    goto bad;
+                }
+                else
+                {
+                    inodeHistory = dip->addrs[j];
+                }
 				++blockcount;
                 char bitmapcheckbuf;
                 //printf("BBLOCK: %d\n", BBLOCK(dip->addrs[j], sb->ninodes));
@@ -193,8 +213,20 @@ int main (int argc, char *argv[]){
             }
             //printf("blockbuf content [%d]: %d\n", indirect, blockbuf.intbuf[indirect]);
 			
-			  if (blockbuf.intbuf[indirect] != 0)
+            if (blockbuf.intbuf[indirect] != 0)
             {
+                // Check if inode address has been used before
+                if((blockbuf.intbuf[indirect] <= inodeHistory))
+                {
+                    // throw error
+                    errorflag = addused;
+                    goto bad;
+                }
+                else
+                {
+                    inodeHistory = blockbuf.intbuf[indirect];
+                }
+
 				++blockcount;
                 char bitmapcheckbuf;
                 getblock(BBLOCK(blockbuf.intbuf[indirect], sb->ninodes), (void*)bitmapbuf.charbuf, img_ptr);
