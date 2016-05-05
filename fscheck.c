@@ -81,7 +81,8 @@ int main (int argc, char *argv[]){
     // Parse through the inodes
 	int i ;
 	struct dinode *dip = (struct dinode*) (img_ptr + 2*BSIZE);
-	struct dinode *iblockstart = dip;
+	struct dinode * iblockstart = dip;
+	struct dinode * iblocktest = dip;
     for (i = 0; i < sb->ninodes; i++)
     {
         if (dip->type < 0 || dip->type > 3)
@@ -106,6 +107,7 @@ int main (int argc, char *argv[]){
 				}			
 			}
 
+			
 			int dirBlocks = 0;
 			int foundInodeinDir = 0;
 			struct dirent* parseThroughCurrentDir;
@@ -115,16 +117,26 @@ int main (int argc, char *argv[]){
 				int direntptr = 0;
 				while (direntptr <= (512/sizeof(struct dirent)))
 				{
+					/*
+					iblocktest = iblockstart;
+					if (parseThroughCurrentDir->inum != 0){
+						iblocktest = iblocktest + (parseThroughCurrentDir->inum);
+						if (iblocktest->type == 0)
+						{
+							errorflag = inodefree;
+							goto bad;
+						}
+					}*/
+					<3 <3 <3
+					
 					if (parseThroughCurrentDir->inum == i)
 					{
 						foundInodeinDir = 1;
-						break;
+						
 					}
 					direntptr++;
 					parseThroughCurrentDir++;
 				}
-				if (foundInodeinDir)
-					break;
 				
 				dirBlocks++;
 			}
@@ -139,16 +151,27 @@ int main (int argc, char *argv[]){
 						parseThroughCurrentDir = (struct dirent*)(&dircheckbuf.charbuf[indirectptr]);
 						int indirectDirentPtr = 0;
 						while(indirectDirentPtr <= (512/sizeof(struct dirent))){
+							
+							/*
+							iblocktest = iblockstart;
+							if (parseThroughCurrentDir->inum != 0){
+								iblocktest = iblocktest + (parseThroughCurrentDir->inum);
+								if (iblocktest->type == 0)
+								{
+									errorflag = inodefree;
+									goto bad;
+								}
+							}*/
+							
 							if(parseThroughCurrentDir->inum == i){
 								foundInodeinDir = 1;
-								break;
+								
 							}
 							indirectDirentPtr++;
 							parseThroughCurrentDir++;
 						}
 						indirectptr++;
-						if (foundInodeinDir)
-							break;
+						
 					}
                 }
 			
