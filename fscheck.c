@@ -115,19 +115,20 @@ int main (int argc, char *argv[]){
 				getblock(dip->addrs[dirBlocks], (void*)dircheckbuf.charbuf, img_ptr);
 				parseThroughCurrentDir = (struct dirent*)dircheckbuf.charbuf;
 				int direntptr = 0;
-				while (direntptr <= (512/sizeof(struct dirent)))
+                while (direntptr < (512/sizeof(struct dirent)))
 				{
-					/*
+
 					iblocktest = iblockstart;
 					if (parseThroughCurrentDir->inum != 0){
+
 						iblocktest = iblocktest + (parseThroughCurrentDir->inum);
 						if (iblocktest->type == 0)
 						{
 							errorflag = inodefree;
 							goto bad;
 						}
-					}*/
-					<3 <3 <3
+                    }
+                    //<3 <3 <3
 					
 					if (parseThroughCurrentDir->inum == i)
 					{
@@ -150,18 +151,19 @@ int main (int argc, char *argv[]){
 						
 						parseThroughCurrentDir = (struct dirent*)(&dircheckbuf.charbuf[indirectptr]);
 						int indirectDirentPtr = 0;
-						while(indirectDirentPtr <= (512/sizeof(struct dirent))){
+                        while(indirectDirentPtr < (512/sizeof(struct dirent))){
 							
-							/*
+
 							iblocktest = iblockstart;
 							if (parseThroughCurrentDir->inum != 0){
+                                printf("parseThroughCurrentDir->inum: %d\n", parseThroughCurrentDir->inum);
 								iblocktest = iblocktest + (parseThroughCurrentDir->inum);
 								if (iblocktest->type == 0)
 								{
 									errorflag = inodefree;
 									goto bad;
 								}
-							}*/
+                            }
 							
 							if(parseThroughCurrentDir->inum == i){
 								foundInodeinDir = 1;
