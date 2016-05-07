@@ -6,13 +6,14 @@
 #include <assert.h>
 #include <sys/mman.h>
 #include <string.h>
+#include <stdlib.h>
 #include "fs.h"
 #include "types.h"
 
 #define STDERR_FD 2
 #define INTS_PER_BLOCK 128
+#define NUMBER_OF_LOGENTRIES 1000
 
-// TODO: populate with different errors
 typedef enum errno{
 	noimg,
     badinode,
@@ -34,6 +35,13 @@ typedef union buffer{
     int intbuf[128];
 }buff_u;
 
+typedef struct fileusage
+{
+    uint inum;
+    uint hits;
+    uint file_type;
+}fileusage_t;
+
 uint
 xint(uint x)
 {
@@ -54,9 +62,81 @@ getblock(uint sec, void *buf, void* imagepointer)
     memcpy(buf, imagepointer, 512);
 }
 
+// Takes in a pointer to single directory entry and pointer to array of fileusage_t structures.
+int logUsage(struct dirent* directoryDataBlock, fileusage_t* usageLog, void* imagepointer)
+{
+    int logentry;
+    struct dinode* inodeBase = (struct dinode*) (imagepointer + (2*BSIZE));
+    if(((inodeBase[directoryDataBlock->inum].type) != 3) && strcmp(directoryDataBlock->name, ".."))
+    {
+        for(logentry = 0; logentry < NUMBER_OF_LOGENTRIES; logentry++)
+        {
+            //printf("directorydata->inum: %d\n", directoryDataBlock->inum);
+            if ((directoryDataBlock->inum) == usageLog[logentry].inum)
+            {
+                usageLog[logentry].hits++;
+                return 1;
+            }
+            //(usageLog[logentry].inum)!= 0
+        }
+
+        // If code gets here it means this inum was not added to the log entry yet.
+        // Parse through fileusage log to find empty slot, then append to the array
+        for(logentry = 0; logentry < NUMBER_OF_LOGENTRIES; logentry++)
+        {
+            if((usageLog[logentry].inum) == 0) //Not in use!
+            {
+                usageLog[logentry].inum = directoryDataBlock->inum;
+                //usageLog[logentry].file_type =
+                usageLog[logentry].hits++;
+                break;
+            }
+
+        }
+        return 1;
+    }
+    return 0;
+}
+
+// This function takes in a usage log and checks two tests. The first - if there are file references with a different number of hits compared to
+// the actual nlinks listed in inode. Second - if there are any directory type inodes with nlink > 1. Returns -1 for the former and -2 for the latter. 0 for good.
+int checkFileUsage(fileusage_t* usageLog, void* imagePointer)
+{
+    struct dinode* inodeBase = (struct dinode*) (imagePointer+(2*BSIZE));
+    // parse through entire log
+    int logparser;
+    for (logparser = 0; logparser < NUMBER_OF_LOGENTRIES; logparser++)
+    {
+        if (usageLog[logparser].inum == 0)
+        {
+            // Break if you enter unpopulated part of log.
+            break;
+        }
+        // Quick test to check if there are directories with more than 1 hit.
+        if ((usageLog[logparser].hits > 2) && (usageLog[logparser].file_type = 1))
+        {
+            return -2;
+        }
+
+        // Test to check if there are files with number of hits in directories that do not equal refences in inode.
+        if((usageLog[logparser].hits != (inodeBase[usageLog[logparser].inum].nlink)) && (usageLog[logparser].file_type == 2))
+        {
+            return -1;
+        }
+//        //Debugcode, remove later
+//        //if (usageLog[logparser].hits > 1)
+        if (logparser < 30)
+        {
+            printf("usageLog[%d].inum: %d ; hits: %d\n", logparser, usageLog[logparser].inum, usageLog[logparser].hits);
+        }
+    }
+    return 0;
+}
+
 int main (int argc, char *argv[]){
     e_errno errorflag;
     char* error_message;
+    fileusage_t* totalFsAndDs = (fileusage_t*)calloc(NUMBER_OF_LOGENTRIES, sizeof(fileusage_t));//[NUMBER_OF_LOGENTRIES];
     buff_u blockbuf;
     buff_u bitmapbuf;
 	buff_u dircheckbuf;
@@ -90,7 +170,6 @@ int main (int argc, char *argv[]){
 			errorflag = badinode;
 			goto bad;
 		}
-					
 		//it's a directory entry!
 		if (dip->type == 1){
 			getblock(dip->addrs[0], (void*)blockbuf.charbuf, img_ptr);
@@ -107,7 +186,7 @@ int main (int argc, char *argv[]){
 				}			
 			}
 
-			
+            // test for dirents referring to inodes which are free.
 			int dirBlocks = 0;
 			int foundInodeinDir = 0;
 			struct dirent* parseThroughCurrentDir;
@@ -117,7 +196,6 @@ int main (int argc, char *argv[]){
 				int direntptr = 0;
                 while (direntptr < (512/sizeof(struct dirent)))
 				{
-
 					iblocktest = iblockstart;
 					if (parseThroughCurrentDir->inum != 0){
 
@@ -128,20 +206,22 @@ int main (int argc, char *argv[]){
 							goto bad;
 						}
                     }
-                    //<3 <3 <3
 					
 					if (parseThroughCurrentDir->inum == i)
 					{
-						foundInodeinDir = 1;
-						
+						foundInodeinDir = 1;						
 					}
+
+                    // Store entry types (file or directory, dev not stored) and number of usages
+                    logUsage(parseThroughCurrentDir, totalFsAndDs, img_ptr);
+                    //printf("direct parseThroughCurrentDir->inum: %d\n", parseThroughCurrentDir->inum);
 					direntptr++;
 					parseThroughCurrentDir++;
 				}
 				
 				dirBlocks++;
 			}
-			
+            // indirect pointers section of the previous test.
 			dirBlocks++; //get to indirect pointers block
                 if ((dirBlocks == NDIRECT) && (dip->addrs[dirBlocks]) != 0)
                 {
@@ -166,9 +246,12 @@ int main (int argc, char *argv[]){
                             }
 							
 							if(parseThroughCurrentDir->inum == i){
-								foundInodeinDir = 1;
-								
+								foundInodeinDir = 1;						
 							}
+
+                            // Store entry types (file or directory, dev not stored) and number of usages
+                            logUsage(parseThroughCurrentDir, totalFsAndDs, img_ptr);
+
 							indirectDirentPtr++;
 							parseThroughCurrentDir++;
 						}
@@ -228,7 +311,7 @@ int main (int argc, char *argv[]){
 		int j;
         for (j = 0; j < NDIRECT; j++)
         {
-           printf("addrs: %d\n", xint(dip->addrs[j]));
+           //printf("addrs: %d\n", xint(dip->addrs[j]));
 
 
             //For the first direct address of first direct pointer, initialize the inodeHistory
@@ -363,6 +446,22 @@ int main (int argc, char *argv[]){
 		goto bad;
 	}
 	
+    // Check through file usage logs and compare hits with usage
+    int fileusagereturn = checkFileUsage(totalFsAndDs, img_ptr);
+
+    if (fileusagereturn == -1)
+    {
+        errorflag = badrefcnt;
+        goto bad;
+    }
+    else if (fileusagereturn == -2)
+    {
+        errorflag = dirused;
+        goto bad;
+    }
+
+
+
 	return 0;
 
     bad:
