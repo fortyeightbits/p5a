@@ -127,7 +127,7 @@ int checkFileUsage(fileusage_t* usageLog, void* imagePointer)
 //        //if (usageLog[logparser].hits > 1)
         if (logparser < 30)
         {
-            printf("usageLog[%d].inum: %d ; hits: %d\n", logparser, usageLog[logparser].inum, usageLog[logparser].hits);
+            //printf("usageLog[%d].inum: %d ; hits: %d\n", logparser, usageLog[logparser].inum, usageLog[logparser].hits);
         }
     }
     return 0;
@@ -236,7 +236,7 @@ int main (int argc, char *argv[]){
 
 							iblocktest = iblockstart;
 							if (parseThroughCurrentDir->inum != 0){
-                                printf("parseThroughCurrentDir->inum: %d\n", parseThroughCurrentDir->inum);
+                                //printf("parseThroughCurrentDir->inum: %d\n", parseThroughCurrentDir->inum);
 								iblocktest = iblocktest + (parseThroughCurrentDir->inum);
 								if (iblocktest->type == 0)
 								{
@@ -440,7 +440,7 @@ int main (int argc, char *argv[]){
 			}
 		//}
 	}
-	printf("totalbits: %d, blockcount: %d\n", totalbits, blockcount);
+	//printf("totalbits: %d, blockcount: %d\n", totalbits, blockcount);
 	if (totalbits != blockcount){
 		errorflag = blknotused;
 		goto bad;
@@ -461,37 +461,36 @@ int main (int argc, char *argv[]){
     }
 
 
-
 	return 0;
 
     bad:
     switch(errorflag){
 		case noimg :
-			error_message = "image not found\n"; break;
+			error_message = "image not found.\n"; break;
 		case badinode : 
-			error_message = "bad inode\n"; break;
+			error_message = "ERROR: bad inode.\n"; break;
 		case badinodeadd : 
-			error_message = "bad address in inode\n"; break;
+			error_message = "ERROR: bad address in inode.\n"; break;
 		case norootdir : 
-			error_message = "root directory does not exist\n"; break;
+			error_message = "ERROR: root directory does not exist.\n"; break;
 		case baddirformat : 
-			error_message = "directory not properly formatted\n"; break;
+			error_message = "ERROR: directory not properly formatted.\n"; break;
 		case parentdirmismatch : 
-			error_message = "parent directory mismatch\n"; break;
+			error_message = "ERROR: parent directory mismatch.\n"; break;
 		case addmarkedfree : 
-			error_message = "address used by inode but marked free in bitmap\n"; break;
+			error_message = "ERROR: address used by inode but marked free in bitmap.\n"; break;
 		case blknotused : 
-			error_message = "bitmap marks block in use but it is not in use\n"; break;
+			error_message = "ERROR: bitmap marks block in use but it is not in use.\n"; break;
 		case addused : 
-			error_message = "address used more than once\n"; break;
+			error_message = "ERROR: address used more than once.\n"; break;
 		case inodenotindir : 
-			error_message = "inode marked use but not found in a directory\n"; break;
+			error_message = "ERROR: inode marked use but not found in a directory.\n"; break;
 		case inodefree : 
-			error_message = "inode referred to in directory but marked free"; break;
+			error_message = "ERROR: inode referred to in directory but marked free.\n"; break;
 		case badrefcnt : 
-			error_message = "bad reference count for file"; break;
+			error_message = "ERROR: bad reference count for file.\n"; break;
 		case dirused : 
-			error_message = "directory appears more than once in file system"; break;
+			error_message = "ERROR: directory appears more than once in file system.\n"; break;
 	}
 	
 	write(STDERR_FILENO, error_message, strlen(error_message));

@@ -1,8 +1,8 @@
 .PHONY: fscheck
-fscheck: fscheck.c
-	gcc -c -Wall fscheck.c fscheck.o 
+fscheck: fscheck.c fs.h types.h
+	gcc fscheck.c -o fscheck
 	
 .PHONY: clean
 clean:
-	rm -rf fscheck.o
+	rm -rf fscheck
 
