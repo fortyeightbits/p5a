@@ -170,6 +170,15 @@ int main (int argc, char *argv[]){
 			errorflag = badinode;
 			goto bad;
 		}
+		
+		if (i == ROOTINO)
+		{
+			if (dip->type != 1){
+				errorflag = norootdir;
+				goto bad;
+			}
+		}
+		
 		//it's a directory entry!
 		if (dip->type == 1){
 			getblock(dip->addrs[0], (void*)blockbuf.charbuf, img_ptr);
@@ -179,8 +188,8 @@ int main (int argc, char *argv[]){
 				goto bad;
 			}
 			
-			
 			if(i == ROOTINO){
+				
 				if (!(directoryptr->inum == ROOTINO && (directoryptr+1)->inum == ROOTINO)){
 						errorflag = norootdir;
 						goto bad;
@@ -212,6 +221,7 @@ int main (int argc, char *argv[]){
 					
 					if (parseThroughCurrentDir->inum == i)
 					{
+						printf("found direct! %d\n", i);
 						foundInodeinDir = 1;						
 					}
 
@@ -249,6 +259,7 @@ int main (int argc, char *argv[]){
                             }
 							
 							if(parseThroughCurrentDir->inum == i){
+								printf("found! %d\n", i);
 								foundInodeinDir = 1;						
 							}
 
@@ -269,8 +280,16 @@ int main (int argc, char *argv[]){
 				goto bad;
 			}
 			
-			//check parent dir mismatch: FAILED TEST
+			//check parent dir mismatch
 			int parentinode = (directoryptr+1)->inum;
+			
+			if (i != ROOTINO){
+				if (parentinode == directoryptr->inum){
+					 errorflag = parentdirmismatch;
+					goto bad;
+				}
+			}
+			
             struct dinode *parseptr = iblockstart;
             parseptr += parentinode;
             int k = 0;

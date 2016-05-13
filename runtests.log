@@ -26,7 +26,7 @@ Test good
 run on a good filesystem
 
 **********************************************************************
-/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/good
+/tmp/tmpTdWdum/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/good
 Failure: ./fscheck returned incorrect status code. Expected 0 got 1
 
 
@@ -48,7 +48,7 @@ Test goodrefcnt
 run on fs with only good reference counts
 
 **********************************************************************
-/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/goodrefcnt
+/tmp/tmpTdWdum/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/goodrefcnt
 Failure: ./fscheck returned incorrect status code. Expected 0 got 1
 
 
@@ -70,7 +70,7 @@ Test nonexistant
 run on a nonexistant filesystem
 
 **********************************************************************
-/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/nonexistant
+/tmp/tmpTdWdum/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/nonexistant
 
 
 test nonexistant PASSED (5 of 5)
@@ -84,21 +84,11 @@ Test badroot
 run on a filesystem with a root directory in bad location
 
 **********************************************************************
-/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badroot
-Failure: ./fscheck gave incorrect standard error.
-Expected: "ERROR: root directory does not exist.\n"
-Got:      "ERROR: directory appears more than once in file system.\n"
+/tmp/tmpTdWdum/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badroot
 
 
-test badroot FAILED (0 of 5)
+test badroot PASSED (5 of 5)
  (run on a filesystem with a root directory in bad location)
- ./fscheck gave incorrect standard error.
-
- Test it yourself by running
- fscheck /u/c/s/cs537-1/ta/tests/5a/images/badroot
- and check out the test folder
- /u/c/s/cs537-1/ta/tests/5a/err/badroot
- to compare your error output with reference outputs. 
 
 starting badinode
 
@@ -108,7 +98,7 @@ Test badinode
 run on a filesystem with a bad type in an inode
 
 **********************************************************************
-/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badinode
+/tmp/tmpTdWdum/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badinode
 
 
 test badinode PASSED (5 of 5)
@@ -122,7 +112,7 @@ Test badaddr
 run on a filesystem with a bad direct address in an inode
 
 **********************************************************************
-/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badaddr
+/tmp/tmpTdWdum/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badaddr
 
 
 test badaddr PASSED (5 of 5)
@@ -136,7 +126,7 @@ Test badindir1
 run on a filesystem with a bad indirect address in an inode
 
 **********************************************************************
-/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badindir1
+/tmp/tmpTdWdum/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badindir1
 
 
 test badindir1 PASSED (5 of 5)
@@ -150,7 +140,7 @@ Test badroot2
 run on a filesystem with a bad root directory in good location
 
 **********************************************************************
-/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badroot2
+/tmp/tmpTdWdum/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badroot2
 
 
 test badroot2 PASSED (5 of 5)
@@ -164,7 +154,7 @@ Test badfmt
 run on a filesystem without . or .. directories
 
 **********************************************************************
-/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badfmt
+/tmp/tmpTdWdum/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badfmt
 
 
 test badfmt PASSED (5 of 5)
@@ -178,21 +168,11 @@ Test mismatch
 run on a filesystem with .. pointing to the wrong directory
 
 **********************************************************************
-/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/mismatch
-Failure: ./fscheck gave incorrect standard error.
-Expected: "ERROR: parent directory mismatch.\n"
-Got:      "ERROR: directory appears more than once in file system.\n"
+/tmp/tmpTdWdum/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/mismatch
 
 
-test mismatch FAILED (0 of 5)
+test mismatch PASSED (5 of 5)
  (run on a filesystem with .. pointing to the wrong directory)
- ./fscheck gave incorrect standard error.
-
- Test it yourself by running
- fscheck /u/c/s/cs537-1/ta/tests/5a/images/mismatch
- and check out the test folder
- /u/c/s/cs537-1/ta/tests/5a/err/mismatch
- to compare your error output with reference outputs. 
 
 starting mrkfree
 
@@ -202,7 +182,7 @@ Test mrkfree
 run on a filesystem with an inuse direct block marked free
 
 **********************************************************************
-/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/mrkfree
+/tmp/tmpTdWdum/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/mrkfree
 
 
 test mrkfree PASSED (5 of 5)
@@ -216,7 +196,7 @@ Test indirfree
 run on a filesystem with an inuse indirect block marked free
 
 **********************************************************************
-/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/indirfree
+/tmp/tmpTdWdum/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/indirfree
 
 
 test indirfree PASSED (5 of 5)
@@ -230,7 +210,7 @@ Test mrkused
 run on a filesystem with a free block marked used
 
 **********************************************************************
-/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/mrkused
+/tmp/tmpTdWdum/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/mrkused
 
 
 test mrkused PASSED (5 of 5)
@@ -244,7 +224,7 @@ Test addronce
 run on a filesystem with an address used more than once
 
 **********************************************************************
-/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/addronce
+/tmp/tmpTdWdum/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/addronce
 
 
 test addronce PASSED (5 of 5)
@@ -258,7 +238,7 @@ Test imrkused
 run with inode marked used, but not referenced in a directory
 
 **********************************************************************
-/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/imrkused
+/tmp/tmpTdWdum/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/imrkused
 Failure: ./fscheck gave incorrect standard error.
 Expected: "ERROR: inode marked use but not found in a directory.\n"
 Got:      "ERROR: directory appears more than once in file system.\n"
@@ -282,7 +262,7 @@ Test imrkfree
 run with inode marked free, but referenced in a directory
 
 **********************************************************************
-/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/imrkfree
+/tmp/tmpTdWdum/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/imrkfree
 
 
 test imrkfree PASSED (5 of 5)
@@ -296,7 +276,7 @@ Test badrefcnt
 run on fs which has an inode with a bad reference count
 
 **********************************************************************
-/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badrefcnt
+/tmp/tmpTdWdum/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badrefcnt
 Failure: ./fscheck gave incorrect standard error.
 Expected: "ERROR: bad reference count for file.\n"
 Got:      "ERROR: directory appears more than once in file system.\n"
@@ -320,7 +300,7 @@ Test badindir2
 run on a filesystem with a bad indirect address in an inode
 
 **********************************************************************
-/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badindir2
+/tmp/tmpTdWdum/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badindir2
 
 
 test badindir2 PASSED (5 of 5)
@@ -334,7 +314,7 @@ Test dironce
 run on fs with a directory appearing more than once
 
 **********************************************************************
-/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/dironce
+/tmp/tmpTdWdum/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/dironce
 
 
 test dironce PASSED (5 of 5)
@@ -369,15 +349,8 @@ test goodrefcnt FAILED (0 of 5)
 test nonexistant PASSED (5 of 5)
  (run on a nonexistant filesystem)
 
-test badroot FAILED (0 of 5)
+test badroot PASSED (5 of 5)
  (run on a filesystem with a root directory in bad location)
- ./fscheck gave incorrect standard error.
-
- Test it yourself by running
- fscheck /u/c/s/cs537-1/ta/tests/5a/images/badroot
- and check out the test folder
- /u/c/s/cs537-1/ta/tests/5a/err/badroot
- to compare your error output with reference outputs. 
 
 test badinode PASSED (5 of 5)
  (run on a filesystem with a bad type in an inode)
@@ -394,15 +367,8 @@ test badroot2 PASSED (5 of 5)
 test badfmt PASSED (5 of 5)
  (run on a filesystem without . or .. directories)
 
-test mismatch FAILED (0 of 5)
+test mismatch PASSED (5 of 5)
  (run on a filesystem with .. pointing to the wrong directory)
- ./fscheck gave incorrect standard error.
-
- Test it yourself by running
- fscheck /u/c/s/cs537-1/ta/tests/5a/images/mismatch
- and check out the test folder
- /u/c/s/cs537-1/ta/tests/5a/err/mismatch
- to compare your error output with reference outputs. 
 
 test mrkfree PASSED (5 of 5)
  (run on a filesystem with an inuse direct block marked free)
@@ -445,6 +411,6 @@ test badindir2 PASSED (5 of 5)
 test dironce PASSED (5 of 5)
  (run on fs with a directory appearing more than once)
 
-Passed 14 of 20 tests.
-Overall 14 of 20
-Points 65 of 95
+Passed 16 of 20 tests.
+Overall 16 of 20
+Points 75 of 95
