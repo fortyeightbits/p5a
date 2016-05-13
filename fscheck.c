@@ -218,7 +218,7 @@ int main (int argc, char *argv[]){
 							goto bad;
 						}
                     }
-					
+                    printf("inum as seen by parseThroughCurrentDir: %d\n", parseThroughCurrentDir->inum);
 					if (parseThroughCurrentDir->inum == i)
 					{
 						printf("found direct! %d\n", i);
