@@ -26,7 +26,7 @@ Test good
 run on a good filesystem
 
 **********************************************************************
-/tmp/tmp2RwB8F/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/good
+/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/good
 Failure: ./fscheck returned incorrect status code. Expected 0 got 1
 
 
@@ -48,7 +48,7 @@ Test goodrefcnt
 run on fs with only good reference counts
 
 **********************************************************************
-/tmp/tmp2RwB8F/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/goodrefcnt
+/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/goodrefcnt
 Failure: ./fscheck returned incorrect status code. Expected 0 got 1
 
 
@@ -70,7 +70,7 @@ Test nonexistant
 run on a nonexistant filesystem
 
 **********************************************************************
-/tmp/tmp2RwB8F/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/nonexistant
+/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/nonexistant
 
 
 test nonexistant PASSED (5 of 5)
@@ -84,7 +84,7 @@ Test badroot
 run on a filesystem with a root directory in bad location
 
 **********************************************************************
-/tmp/tmp2RwB8F/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badroot
+/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badroot
 Failure: ./fscheck gave incorrect standard error.
 Expected: "ERROR: root directory does not exist.\n"
 Got:      "ERROR: directory appears more than once in file system.\n"
@@ -108,7 +108,7 @@ Test badinode
 run on a filesystem with a bad type in an inode
 
 **********************************************************************
-/tmp/tmp2RwB8F/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badinode
+/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badinode
 
 
 test badinode PASSED (5 of 5)
@@ -122,7 +122,7 @@ Test badaddr
 run on a filesystem with a bad direct address in an inode
 
 **********************************************************************
-/tmp/tmp2RwB8F/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badaddr
+/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badaddr
 
 
 test badaddr PASSED (5 of 5)
@@ -136,7 +136,7 @@ Test badindir1
 run on a filesystem with a bad indirect address in an inode
 
 **********************************************************************
-/tmp/tmp2RwB8F/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badindir1
+/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badindir1
 
 
 test badindir1 PASSED (5 of 5)
@@ -150,7 +150,7 @@ Test badroot2
 run on a filesystem with a bad root directory in good location
 
 **********************************************************************
-/tmp/tmp2RwB8F/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badroot2
+/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badroot2
 
 
 test badroot2 PASSED (5 of 5)
@@ -164,7 +164,7 @@ Test badfmt
 run on a filesystem without . or .. directories
 
 **********************************************************************
-/tmp/tmp2RwB8F/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badfmt
+/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badfmt
 
 
 test badfmt PASSED (5 of 5)
@@ -178,7 +178,7 @@ Test mismatch
 run on a filesystem with .. pointing to the wrong directory
 
 **********************************************************************
-/tmp/tmp2RwB8F/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/mismatch
+/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/mismatch
 Failure: ./fscheck gave incorrect standard error.
 Expected: "ERROR: parent directory mismatch.\n"
 Got:      "ERROR: directory appears more than once in file system.\n"
@@ -202,7 +202,7 @@ Test mrkfree
 run on a filesystem with an inuse direct block marked free
 
 **********************************************************************
-/tmp/tmp2RwB8F/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/mrkfree
+/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/mrkfree
 
 
 test mrkfree PASSED (5 of 5)
@@ -216,7 +216,7 @@ Test indirfree
 run on a filesystem with an inuse indirect block marked free
 
 **********************************************************************
-/tmp/tmp2RwB8F/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/indirfree
+/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/indirfree
 
 
 test indirfree PASSED (5 of 5)
@@ -230,7 +230,7 @@ Test mrkused
 run on a filesystem with a free block marked used
 
 **********************************************************************
-/tmp/tmp2RwB8F/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/mrkused
+/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/mrkused
 
 
 test mrkused PASSED (5 of 5)
@@ -244,7 +244,7 @@ Test addronce
 run on a filesystem with an address used more than once
 
 **********************************************************************
-/tmp/tmp2RwB8F/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/addronce
+/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/addronce
 
 
 test addronce PASSED (5 of 5)
@@ -258,7 +258,7 @@ Test imrkused
 run with inode marked used, but not referenced in a directory
 
 **********************************************************************
-/tmp/tmp2RwB8F/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/imrkused
+/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/imrkused
 Failure: ./fscheck gave incorrect standard error.
 Expected: "ERROR: inode marked use but not found in a directory.\n"
 Got:      "ERROR: directory appears more than once in file system.\n"
@@ -282,7 +282,7 @@ Test imrkfree
 run with inode marked free, but referenced in a directory
 
 **********************************************************************
-/tmp/tmp2RwB8F/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/imrkfree
+/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/imrkfree
 
 
 test imrkfree PASSED (5 of 5)
@@ -296,7 +296,7 @@ Test badrefcnt
 run on fs which has an inode with a bad reference count
 
 **********************************************************************
-/tmp/tmp2RwB8F/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badrefcnt
+/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badrefcnt
 Failure: ./fscheck gave incorrect standard error.
 Expected: "ERROR: bad reference count for file.\n"
 Got:      "ERROR: directory appears more than once in file system.\n"
@@ -320,7 +320,7 @@ Test badindir2
 run on a filesystem with a bad indirect address in an inode
 
 **********************************************************************
-/tmp/tmp2RwB8F/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badindir2
+/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/badindir2
 
 
 test badindir2 PASSED (5 of 5)
@@ -334,7 +334,7 @@ Test dironce
 run on fs with a directory appearing more than once
 
 **********************************************************************
-/tmp/tmp2RwB8F/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/dironce
+/tmp/tmp4FODEd/p/./fscheck /u/c/s/cs537-1/ta/tests/5a/images/dironce
 
 
 test dironce PASSED (5 of 5)

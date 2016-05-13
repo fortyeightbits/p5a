@@ -179,12 +179,15 @@ int main (int argc, char *argv[]){
 				goto bad;
 			}
 			
+			
 			if(i == ROOTINO){
 				if (!(directoryptr->inum == ROOTINO && (directoryptr+1)->inum == ROOTINO)){
 						errorflag = norootdir;
 						goto bad;
 				}			
 			}
+			
+			
 
             // test for dirents referring to inodes which are free.
 			int dirBlocks = 0;
@@ -266,7 +269,7 @@ int main (int argc, char *argv[]){
 				goto bad;
 			}
 			
-			//check parent dir mismatch
+			//check parent dir mismatch: FAILED TEST
 			int parentinode = (directoryptr+1)->inum;
             struct dinode *parseptr = iblockstart;
             parseptr += parentinode;
