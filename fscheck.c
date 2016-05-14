@@ -116,21 +116,21 @@ int checkFileUsage(fileusage_t* usageLog, void* imagePointer)
         // Test to check if there are files with number of hits in directories that do not equal refences in inode.
         if((usageLog[logparser].hits != (inodeBase[usageLog[logparser].inum].nlink)) && (usageLog[logparser].file_type == 2))
         {
-            return -1;
+            //return -1;
         }
 
         // Quick test to check if there are directories with more than 2 hits.
         if ((usageLog[logparser].hits > 2) && (usageLog[logparser].file_type = 1))
         {
-            return -2;
+            //return -2;
         }
 
 //        //Debugcode, remove later
 //        //if (usageLog[logparser].hits > 1)
-//        if (1)
-//        {
-//            printf("usageLog[%d].inum: %d ; hits: %d; type: %d\n", logparser, usageLog[logparser].inum, usageLog[logparser].hits, usageLog[logparser].file_type);
-//        }
+        if (1)
+        {
+            printf("usageLog[%d].inum: %d ; hits: %d; type: %d\n", logparser, usageLog[logparser].inum, usageLog[logparser].hits, usageLog[logparser].file_type);
+        }
     }
     return 0;
 }
@@ -242,6 +242,8 @@ int main (int argc, char *argv[]){
 			errorflag = badinode;
 			goto bad;
 		}
+
+        printf("inode number: %d ; hits: %d ; type: %d\n", i, dip->nlink, dip->type);
 		//it's a directory entry!
 		if (dip->type == 1){
 			getblock(dip->addrs[0], (void*)blockbuf.charbuf, img_ptr);
