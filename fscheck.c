@@ -62,6 +62,7 @@ getblock(uint sec, void *buf, void* imagepointer)
     memcpy(buf, imagepointer, 512);
 }
 
+
 // Takes in a pointer to single directory entry and pointer to array of fileusage_t structures.
 int logUsage(struct dirent* directoryDataBlock, fileusage_t* usageLog, void* imagepointer)
 {
@@ -155,7 +156,6 @@ int main (int argc, char *argv[]){
     struct superblock *sb;
 	sb = (struct superblock *) (img_ptr + BSIZE);
 	int blockcount = 29;
-	
 
     uint inodeHistory = 0;
     // Parse through the inodes
@@ -163,6 +163,56 @@ int main (int argc, char *argv[]){
 	struct dinode *dip = (struct dinode*) (img_ptr + 2*BSIZE);
 	struct dinode * iblockstart = dip;
 	struct dinode * iblocktest = dip;
+	
+	
+	//int array [100];
+	//int index = 0;
+	//special snowflake loop to get inodes in use
+	struct dinode *inodeinuse = dip;
+	struct dinode *ptr = dip;
+	int inodenum;
+	int found = 0;
+	 for (inodenum = 0; inodenum < sb->ninodes; inodenum++)
+    {
+		if (inodeinuse->type != 0){
+			//array[index] = inodenum; //an inode in use
+			//printf("Inum: %d, type: %d\n", array[index], inodeinuse->type);
+			///////////LOOK THROUGH DIR FOR inodenum//////////////
+			int x;
+			int y;
+			struct dirent* direntptr;
+			for (x = 0; x < sb->ninodes; x++){
+				if (ptr->type == 1){ //directory
+					y = 0;
+					while (ptr->addrs[y] > 0 && ptr->addrs[y] < 1024){
+						printf("ptraddr: %d\n", ptr->addrs[y]);
+						getblock(ptr->addrs[y], (void*)dircheckbuf.charbuf, img_ptr);
+						direntptr = (struct dirent*)dircheckbuf.charbuf;
+						int z = 0;
+						while (z < (512/sizeof(struct dirent)))
+						{
+							if (direntptr->inum == inodenum){
+								found = 1;
+							}
+							direntptr++;
+							z++;
+						}
+					y++;
+					}
+				}
+				ptr++;
+			}
+			if (!found){
+				errorflag = inodenotindir;
+				goto bad;
+			}
+			///////////////////////////////////////////////
+		} 
+		inodeinuse++;
+	}
+	//int usedinodecnt = index;
+	
+	//main inode loop
     for (i = 0; i < sb->ninodes; i++)
     {
         if (dip->type < 0 || dip->type > 3)
@@ -189,18 +239,15 @@ int main (int argc, char *argv[]){
 			}
 			
 			if(i == ROOTINO){
-				
 				if (!(directoryptr->inum == ROOTINO && (directoryptr+1)->inum == ROOTINO)){
 						errorflag = norootdir;
 						goto bad;
 				}			
 			}
 			
-			
-
             // test for dirents referring to inodes which are free.
 			int dirBlocks = 0;
-			int foundInodeinDir = 0;
+			//int foundInodeinDir = 0;
 			struct dirent* parseThroughCurrentDir;
 			while (dip->addrs[dirBlocks] != 0){
 				getblock(dip->addrs[dirBlocks], (void*)dircheckbuf.charbuf, img_ptr);
@@ -218,16 +265,24 @@ int main (int argc, char *argv[]){
 							goto bad;
 						}
                     }
-                    printf("inum as seen by parseThroughCurrentDir: %d\n", parseThroughCurrentDir->inum);
-					if (parseThroughCurrentDir->inum == i)
-					{
-						printf("found direct! %d\n", i);
-						foundInodeinDir = 1;						
-					}
+					
+					/*
+					int meh;
+					printf("cnt: %d\n", usedinodecnt);
+					//printf("i: %d\n", i);
+					
+					//printf("parsethroughinum: %d\n", parseThroughCurrentDir->inum);
+					for (meh = 0; meh < usedinodecnt; meh++){
+						if (parseThroughCurrentDir->inum == array[meh] && array[meh] != 0)
+						{
+							printf("found direct! %d\n", array[meh]);
+							usedinodecnt--;
+							array[meh] = 0;
+						}
+					}*/
 
                     // Store entry types (file or directory, dev not stored) and number of usages
                     logUsage(parseThroughCurrentDir, totalFsAndDs, img_ptr);
-                    //printf("direct parseThroughCurrentDir->inum: %d\n", parseThroughCurrentDir->inum);
 					direntptr++;
 					parseThroughCurrentDir++;
 				}
@@ -258,10 +313,18 @@ int main (int argc, char *argv[]){
 								}
                             }
 							
-							if(parseThroughCurrentDir->inum == i){
-								printf("found! %d\n", i);
-								foundInodeinDir = 1;						
-							}
+							/*
+							int meh2;
+							printf("cnt: %d\n", usedinodecnt);
+							for (meh2 = 0; meh2 < usedinodecnt; meh2++){
+								//printf("what: %d\n", array[meh]);
+								if (parseThroughCurrentDir->inum == array[meh2] && array[meh2] != 0)
+								{
+									printf("found indirect! %d\n", array[meh2]);
+									usedinodecnt--;
+									array[meh2] = 0;						
+								}		
+							}*/
 
                             // Store entry types (file or directory, dev not stored) and number of usages
                             logUsage(parseThroughCurrentDir, totalFsAndDs, img_ptr);
@@ -274,11 +337,7 @@ int main (int argc, char *argv[]){
 					}
                 }
 			
-			if (!foundInodeinDir)
-			{
-				errorflag = inodenotindir;
-				goto bad;
-			}
+			
 			
 			//check parent dir mismatch
 			int parentinode = (directoryptr+1)->inum;
@@ -382,8 +441,6 @@ int main (int argc, char *argv[]){
 			++blockcount;
 		}
 
-       // printf("type: %d\n", xint(dip->type));
-
 		//indirect pointers
         getblock(dip->addrs[NDIRECT], (void*)blockbuf.charbuf, img_ptr);
         int indirect;
@@ -426,6 +483,13 @@ int main (int argc, char *argv[]){
         }
 		dip++; //will increment by size of dip
 	}
+	
+	/*
+	if (usedinodecnt != 0)
+	{
+		errorflag = inodenotindir;
+		goto bad;
+	}*/
 	
 	//check bitmap
 	//struct dinode *inodeptr = (struct dinode*) (img_ptr + 2*BSIZE);
