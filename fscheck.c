@@ -173,26 +173,45 @@ int main (int argc, char *argv[]){
 	int found = 0;
 	 for (inodenum = 0; inodenum < sb->ninodes; inodenum++)
     {
+				
+		if (inodenum == ROOTINO)
+		{
+			if (inodeinuse->type != 1){
+				errorflag = norootdir;
+				goto bad;
+			}
+		}
+		
 		if (inodeinuse->type != 0){
 			//array[index] = inodenum; //an inode in use
-			//printf("Inum: %d, type: %d\n", array[index], inodeinuse->type);
+			//printf("Inum: %d\n", inodenum);
 			///////////LOOK THROUGH DIR FOR inodenum//////////////
 			int x;
 			int y;
 			struct dirent* direntptr;
             ptr = dip;
 			for (x = 0; x < sb->ninodes; x++){
-                //printf("inodenum: %d ----- x: %d ---- ptr->type: %d\n", inodenum, x, ptr->type);
 				if (ptr->type == 1){ //directory
+				
 					y = 0;
 					while (ptr->addrs[y] > 0 && ptr->addrs[y] < 1024){
-                        //printf("ptraddr: %d\n", ptr->addrs[y]);
 						getblock(ptr->addrs[y], (void*)dircheckbuf.charbuf, img_ptr);
 						direntptr = (struct dirent*)dircheckbuf.charbuf;
+						
+						//first block
+						if (y == 0){
+							if (!(strcmp(direntptr->name, ".") == 0  && (strcmp((direntptr+1)->name, "..") == 0))){
+								errorflag = baddirformat;
+								goto bad;
+							}
+						}
+						
+						
 						int z = 0;
 						while (z < (512/sizeof(struct dirent)))
 						{
 							if (direntptr->inum == inodenum){
+								//printf("found! %d\n", inodenum);
 								found = 1;
 							}
 							direntptr++;
@@ -207,6 +226,7 @@ int main (int argc, char *argv[]){
 				errorflag = inodenotindir;
 				goto bad;
 			}
+			found = 0;
 			///////////////////////////////////////////////
 		} 
 		inodeinuse++;
@@ -221,23 +241,13 @@ int main (int argc, char *argv[]){
 			errorflag = badinode;
 			goto bad;
 		}
-		
-		if (i == ROOTINO)
-		{
-			if (dip->type != 1){
-				errorflag = norootdir;
-				goto bad;
-			}
-		}
+
 		
 		//it's a directory entry!
 		if (dip->type == 1){
 			getblock(dip->addrs[0], (void*)blockbuf.charbuf, img_ptr);
 			directoryptr = (struct dirent*)blockbuf.charbuf;
-			if (!(strcmp(directoryptr->name, ".") == 0  && (strcmp((directoryptr+1)->name, "..") == 0))){
-				errorflag = baddirformat;
-				goto bad;
-			}
+			
 			
 			if(i == ROOTINO){
 				if (!(directoryptr->inum == ROOTINO && (directoryptr+1)->inum == ROOTINO)){
