@@ -88,7 +88,7 @@ int logUsage(struct dirent* directoryDataBlock, fileusage_t* usageLog, void* ima
             if((usageLog[logentry].inum) == 0) //Not in use!
             {
                 usageLog[logentry].inum = directoryDataBlock->inum;
-                //usageLog[logentry].file_type =
+                usageLog[logentry].file_type = inodeBase[directoryDataBlock->inum].type;
                 usageLog[logentry].hits++;
                 break;
             }
@@ -113,23 +113,24 @@ int checkFileUsage(fileusage_t* usageLog, void* imagePointer)
             // Break if you enter unpopulated part of log.
             break;
         }
-        // Quick test to check if there are directories with more than 1 hit.
-        if ((usageLog[logparser].hits > 2) && (usageLog[logparser].file_type = 1))
-        {
-            return -2;
-        }
-
         // Test to check if there are files with number of hits in directories that do not equal refences in inode.
         if((usageLog[logparser].hits != (inodeBase[usageLog[logparser].inum].nlink)) && (usageLog[logparser].file_type == 2))
         {
             return -1;
         }
+
+        // Quick test to check if there are directories with more than 2 hits.
+        if ((usageLog[logparser].hits > 2) && (usageLog[logparser].file_type = 1))
+        {
+            return -2;
+        }
+
 //        //Debugcode, remove later
 //        //if (usageLog[logparser].hits > 1)
-        if (logparser < 30)
-        {
-            //printf("usageLog[%d].inum: %d ; hits: %d\n", logparser, usageLog[logparser].inum, usageLog[logparser].hits);
-        }
+//        if (1)
+//        {
+//            printf("usageLog[%d].inum: %d ; hits: %d; type: %d\n", logparser, usageLog[logparser].inum, usageLog[logparser].hits, usageLog[logparser].file_type);
+//        }
     }
     return 0;
 }
@@ -241,8 +242,6 @@ int main (int argc, char *argv[]){
 			errorflag = badinode;
 			goto bad;
 		}
-
-		
 		//it's a directory entry!
 		if (dip->type == 1){
 			getblock(dip->addrs[0], (void*)blockbuf.charbuf, img_ptr);
@@ -276,21 +275,6 @@ int main (int argc, char *argv[]){
 							goto bad;
 						}
                     }
-					
-					/*
-					int meh;
-					printf("cnt: %d\n", usedinodecnt);
-					//printf("i: %d\n", i);
-					
-					//printf("parsethroughinum: %d\n", parseThroughCurrentDir->inum);
-					for (meh = 0; meh < usedinodecnt; meh++){
-						if (parseThroughCurrentDir->inum == array[meh] && array[meh] != 0)
-						{
-							printf("found direct! %d\n", array[meh]);
-							usedinodecnt--;
-							array[meh] = 0;
-						}
-					}*/
 
                     // Store entry types (file or directory, dev not stored) and number of usages
                     logUsage(parseThroughCurrentDir, totalFsAndDs, img_ptr);
@@ -323,19 +307,6 @@ int main (int argc, char *argv[]){
 									goto bad;
 								}
                             }
-							
-							/*
-							int meh2;
-							printf("cnt: %d\n", usedinodecnt);
-							for (meh2 = 0; meh2 < usedinodecnt; meh2++){
-								//printf("what: %d\n", array[meh]);
-								if (parseThroughCurrentDir->inum == array[meh2] && array[meh2] != 0)
-								{
-									printf("found indirect! %d\n", array[meh2]);
-									usedinodecnt--;
-									array[meh2] = 0;						
-								}		
-							}*/
 
                             // Store entry types (file or directory, dev not stored) and number of usages
                             logUsage(parseThroughCurrentDir, totalFsAndDs, img_ptr);
