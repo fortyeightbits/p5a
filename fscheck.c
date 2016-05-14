@@ -164,7 +164,6 @@ int main (int argc, char *argv[]){
 	struct dinode * iblockstart = dip;
 	struct dinode * iblocktest = dip;
 	
-	
 	//int array [100];
 	//int index = 0;
 	//special snowflake loop to get inodes in use
@@ -181,11 +180,13 @@ int main (int argc, char *argv[]){
 			int x;
 			int y;
 			struct dirent* direntptr;
+            ptr = dip;
 			for (x = 0; x < sb->ninodes; x++){
+                //printf("inodenum: %d ----- x: %d ---- ptr->type: %d\n", inodenum, x, ptr->type);
 				if (ptr->type == 1){ //directory
 					y = 0;
 					while (ptr->addrs[y] > 0 && ptr->addrs[y] < 1024){
-						printf("ptraddr: %d\n", ptr->addrs[y]);
+                        //printf("ptraddr: %d\n", ptr->addrs[y]);
 						getblock(ptr->addrs[y], (void*)dircheckbuf.charbuf, img_ptr);
 						direntptr = (struct dirent*)dircheckbuf.charbuf;
 						int z = 0;
